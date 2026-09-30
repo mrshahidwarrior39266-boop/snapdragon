@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Campus Companion — Project Description</title>
+<style>
+  @page { size: A4; margin: 25mm 20mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', 'Times New Roman', Georgia, serif;
+    font-size: 12pt;
+    line-height: 1.7;
+    color: #1a1a1a;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 20mm;
+    background: #fff;
+  }
+
+  h1 { font-size: 22pt; text-align: center; margin-bottom: 4px; color: #111; }
+  .subtitle { text-align: center; font-size: 13pt; color: #444; margin-bottom: 6px; }
+  .divider { border: none; border-top: 2px solid #2c3e50; margin: 12px 0 20px; }
+
+  h2 {
+    font-size: 14pt;
+    color: #2c3e50;
+    margin: 18px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  p { margin-bottom: 10px; text-align: justify; }
+  ul, ol { margin: 6px 0 12px 22px; }
+  li { margin-bottom: 5px; }
+  strong { color: #2c3e50; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px;
+    font-size: 11pt;
+  }
+  th, td {
+    border: 1px solid #bbb;
+    padding: 7px 10px;
+    text-align: left;
+  }
+  th { background: #2c3e50; color: #fff; font-weight: 600; }
+  tr:nth-child(even) { background: #f4f6f7; }
+
+  .footer {
+    margin-top: 30px;
+    padding-top: 12px;
+    border-top: 1px solid #ccc;
+    font-size: 10pt;
+    color: #777;
+    text-align: center;
+  }
+
+  @media print {
+    body { padding: 0; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Campus Companion</h1>
+<p class="subtitle">AI-Powered Local Study Assistant</p>
+<hr class="divider">
+
+<h2>1. Project Overview</h2>
+<p>
+  <strong>Campus Companion</strong> is an AI-powered study assistant web application designed to help college and university students study more effectively. The application runs entirely on the user's local machine — requiring no internet connection and ensuring complete data privacy. It combines Optical Character Recognition (OCR), Speech-to-Text (STT), and a Large Language Model (LLM) to provide a seamless study workflow: students can scan their textbooks and handwritten notes, ask questions using voice or text in English, Hindi, or Hinglish, and receive AI-generated summaries, step-by-step explanations, and practice questions.
+</p>
+
+<h2>2. Problem Statement</h2>
+<p>
+  Students often struggle with organizing and revising handwritten notes, understanding complex topics without a tutor, and generating practice material before exams. Existing AI tools (such as ChatGPT) require a constant internet connection, raise privacy concerns with uploaded study material, and are often blocked on campus networks. There is a need for a fully offline, privacy-preserving, AI-powered study tool that works on modern laptop hardware without requiring expensive cloud APIs.
+</p>
+
+<h2>3. Objectives</h2>
+<ul>
+  <li>Enable students to extract text from photos of textbooks and handwritten notes using OCR (English &amp; Hindi).</li>
+  <li>Allow voice-based question input via speech-to-text in English, Hindi, and Hinglish.</li>
+  <li>Generate AI-powered summaries, detailed explanations, and fill-in-the-blank practice questions from extracted or typed notes.</li>
+  <li>Run 100% locally on consumer-grade laptops (optimized for Snapdragon X Elite ARM64 processors) with zero cloud dependency.</li>
+</ul>
+
+<h2>4. Technology Stack</h2>
+<table>
+  <tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+  <tr><td>Backend</td><td>Python, FastAPI, Uvicorn</td><td>REST API server for OCR, STT, and LLM proxy</td></tr>
+  <tr><td>Frontend</td><td>HTML5, CSS3, Vanilla JavaScript</td><td>Single-page application (responsive, dark theme)</td></tr>
+  <tr><td>OCR Engine</td><td>EasyOCR (PyTorch-based)</td><td>Text extraction from images (English + Hindi)</td></tr>
+  <tr><td>STT Engine</td><td>faster-whisper (CTranslate2)</td><td>Speech-to-text transcription on CPU</td></tr>
+  <tr><td>LLM Engine</td><td>Qwen 2.5 Coder 7B via Llamafile</td><td>Reasoning, summarization, and question generation</td></tr>
+  <tr><td>Target Hardware</td><td>Snapdragon X Elite (ARM64)</td><td>HP Omen laptop, optimized thread &amp; memory config</td></tr>
+</table>
+
+<h2>5. Key Features</h2>
+<ol>
+  <li><strong>Smart OCR:</strong> Captures notes via camera or file upload. Preprocessing pipeline (grayscale conversion, contrast enhancement, intelligent resizing) ensures high accuracy even on highlighted or low-resolution images.</li>
+  <li><strong>Voice Input:</strong> 4-second voice recording with automatic transcription using Whisper (base model, int8 quantization for fast CPU inference).</li>
+  <li><strong>AI Study Modes:</strong>
+    <ul>
+      <li><em>Summary</em> — Concise bulleted summaries of study notes.</li>
+      <li><em>Explain</em> — Step-by-step explanations matching the student's language style.</li>
+      <li><em>Practice</em> — Auto-generated fill-in-the-blank questions with answer keys.</li>
+    </ul>
+  </li>
+  <li><strong>Fully Offline:</strong> All AI models run locally. No data leaves the device.</li>
+  <li><strong>Responsive UI:</strong> Dark-themed, mobile-friendly single-page application.</li>
+</ol>
+
+<h2>6. System Architecture</h2>
+<p>
+  The application follows a client-server architecture running on <strong>localhost</strong>. The frontend (served as a static HTML file by FastAPI) communicates with three backend API endpoints: <code>/api/ocr</code> for text extraction, <code>/api/stt</code> for speech transcription, and <code>/api/llm</code> which proxies requests to a Llamafile server running the Qwen 2.5 Coder model. The Llamafile server exposes an OpenAI-compatible <code>/v1/chat/completions</code> endpoint on port 8081, while the FastAPI backend runs on port 8000.
+</p>
+
+<h2>7. Hardware Optimization</h2>
+<p>
+  The application is specifically optimized for the <strong>Snapdragon X Elite</strong> processor (12-core ARM64):
+</p>
+<ul>
+  <li>LLM inference uses 10 threads (reserving 2 cores for OS and backend).</li>
+  <li>Whisper STT uses int8 quantization and beam size 3 for fast ARM inference.</li>
+  <li>EasyOCR runs on CPU with intelligent image preprocessing to minimize processing time.</li>
+  <li>GPU offloading is disabled by default (no CUDA), with optional Vulkan support noted for the Adreno GPU.</li>
+</ul>
+
+<h2>8. Future Scope</h2>
+<ul>
+  <li>Integration with Snapdragon NPU (Neural Processing Unit) for accelerated AI inference.</li>
+  <li>Support for PDF document upload and multi-page OCR.</li>
+  <li>Flashcard generation and spaced repetition scheduling.</li>
+  <li>Multi-user support with local SQLite database for saving study sessions.</li>
+  <li>Offline translation between English and Hindi for bilingual study material.</li>
+</ul>
+
+<div class="footer">
+  Campus Companion &mdash; Built with Python, FastAPI, EasyOCR, Whisper, and Qwen 2.5 Coder
+</div>
+
+</body>
+</html>

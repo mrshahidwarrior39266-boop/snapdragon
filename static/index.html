@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Companion</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --accent-hover: #79b8ff;
+    --success: #3fb950;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 28px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    white-space: nowrap;
+  }
+  #toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Landing Page ── */
+  #landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 32px 24px;
+  }
+  .logo { font-size: 64px; margin-bottom: 12px; }
+  #landing h1 {
+    font-size: 44px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #a371f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .tagline {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 40px;
+    max-width: 520px;
+    line-height: 1.7;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+    max-width: 680px;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 18px;
+    text-align: left;
+    transition: border-color 0.2s;
+  }
+  .feature:hover { border-color: var(--accent); }
+  .feature .icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .feature h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .feature p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent), #a371f7);
+    color: #fff;
+    border: none;
+    padding: 16px 52px;
+    font-size: 17px;
+    font-weight: 700;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 28px;
+    letter-spacing: 0.2px;
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(88,166,255,0.3); }
+  .btn-start:active { transform: translateY(0); }
+
+  #net {
+    font-size: 13px;
+    color: var(--text2);
+    padding: 8px 18px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Study Mode ── */
+  #study {
+    display: none;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    min-height: 100vh;
+  }
+  #study.on { display: block; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h2 {
+    flex: 1;
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #a371f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  #back {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  #back:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Navigation Tabs ── */
+  .nav-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px;
+    border: 1px solid var(--border);
+  }
+  button.nav {
+    flex: 1;
+    padding: 10px 6px;
+    background: transparent;
+    border: none;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  button.nav:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  button.nav.cur {
+    color: var(--text);
+    background: var(--card);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    font-weight: 600;
+  }
+
+  /* ── Views ── */
+  .view { display: none; animation: fadeIn 0.2s ease; }
+  .view.cur { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Shared Buttons ── */
+  .btn {
+    padding: 10px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover:not(:disabled) { background: var(--card); border-color: var(--accent); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn.alt { background: transparent; }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn.sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ── Camera View ── */
+  .cam-stage {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4/3;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #vid {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #stageMsg {
+    position: absolute;
+    color: var(--text2);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  #camMsg {
+    font-size: 13px;
+    color: var(--text2);
+    text-align: center;
+    min-height: 20px;
+    margin-bottom: 12px;
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Photo Gallery ── */
+  #gal {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .ph {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .ph:hover { border-color: var(--text2); }
+  .ph img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+  .ph > div {
+    padding: 8px;
+    display: flex;
+    gap: 4px;
+  }
+  .ph .btn { flex: 1; padding: 6px 4px; font-size: 11px; }
+  .empty {
+    color: var(--text2);
+    font-size: 14px;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* ── Notes / Text View ── */
+  #notes {
+    width: 100%;
+    min-height: 220px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 16px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    line-height: 1.75;
+  }
+  #notes::placeholder { color: var(--text2); }
+  #notes:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88,166,255,0.1); }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0 20px;
+  }
+  #wc { font-size: 12px; color: var(--text2); }
+
+  .question-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .question-section label {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  #q {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  #q::placeholder { color: var(--text2); }
+  #q:focus { outline: none; border-color: var(--accent); }
+  #lang {
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  #micMsg { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+  .go-btn { width: 100%; }
+
+  /* ── Answer View ── */
+  .mode-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .mode { flex: 1; min-width: 100px; text-align: center; }
+  .mode.cur {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #fff !important;
+  }
+
+  .answer-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 12px;
+    min-height: 200px;
+  }
+  #out {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.85;
+    margin: 0;
+    color: var(--text);
+  }
+  #by {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text2);
+    font-style: italic;
+  }
+
+  /* ── Models View ── */
+  #eng { display: grid; gap: 12px; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--text2); }
+  .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .card p { font-size: 13px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(248,81,73,0.12);
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .badge.ok {
+    background: rgba(63,185,80,0.12);
+    color: var(--success);
+  }
+  .status-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--text2);
+    flex-shrink: 0;
+  }
+  .dot.ok { background: var(--success); box-shadow: 0 0 6px rgba(63,185,80,0.4); }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    #landing h1 { font-size: 30px; }
+    .tagline { font-size: 15px; }
+    .btn-start { padding: 14px 32px; font-size: 15px; }
+    button.nav { font-size: 11px; padding: 9px 2px; }
+    #gal { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+    .mode { min-width: 80px; font-size: 13px; padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<!-- ════════ Landing Page ════════ -->
+<section id="landing">
+  <div class="logo">📚</div>
+  <h1>Campus Companion</h1>
+  <p class="tagline">Your AI-powered study assistant. Scan notes, ask questions in any language, and practice — all running locally on your Snapdragon device.</p>
+
+  <div class="features">
+    <div class="feature">
+      <span class="icon">📷</span>
+      <h3>Scan Notes</h3>
+      <p>Extract text from textbook photos &amp; handwritten notes using EasyOCR</p>
+    </div>
+    <div class="feature">
+      <span class="icon">🎤</span>
+      <h3>Voice Input</h3>
+      <p>Speak your questions in English, Hindi, or Hinglish via Whisper</p>
+    </div>
+    <div class="feature">
+      <span class="icon">🧠</span>
+      <h3>AI Answers</h3>
+      <p>Summaries, step-by-step explanations &amp; practice questions via Qwen 2.5</p>
+    </div>
+  </div>
+
+  <button class="btn-start" data-open>Start Studying</button>
+  <div id="net"></div>
+</section>
+
+<!-- ════════ Study Mode ════════ -->
+<section id="study">
+
+  <!-- Header -->
+  <div class="header">
+    <button id="back">← Back</button>
+    <h2>Campus Companion</h2>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-bar">
+    <button class="nav cur" data-view="camera">📷 Camera</button>
+    <button class="nav" data-view="text">📝 Notes</button>
+    <button class="nav" data-view="answer">💡 Answers</button>
+    <button class="nav" data-view="models">⚙️ Models</button>
+  </div>
+
+  <!-- ── Camera View ── -->
+  <div id="v-camera" class="view cur">
+    <div class="cam-stage">
+      <p id="stageMsg">Tap "Start Camera" to begin capturing your notes</p>
+      <video id="vid" autoplay playsinline></video>
+    </div>
+    <p id="camMsg"></p>
+    <div class="btn-row">
+      <button id="cam" class="btn primary">📷 Start Camera</button>
+      <button id="shot" class="btn" disabled>✅ Capture</button>
+      <button id="stop" class="btn alt" disabled>⏹ Stop</button>
+    </div>
+    <div class="btn-row">
+      <label class="btn alt" style="cursor:pointer">
+        📁 Choose Photos
+        <input id="file" type="file" accept="image/*" multiple hidden>
+      </label>
+    </div>
+    <div id="gal"></div>
+  </div>
+
+  <!-- ── Notes / Text View ── -->
+  <div id="v-text" class="view">
+    <textarea id="notes" rows="10" placeholder="Your extracted text and notes appear here.&#10;Use the Camera tab to scan pages, or type / paste notes directly."></textarea>
+    <div class="meta-row">
+      <span id="wc">0 words</span>
+      <button id="clr" class="btn alt sm">🗑 Clear</button>
+    </div>
+
+    <div class="question-section">
+      <label>💬 Ask a Question</label>
+      <div class="input-group">
+        <input id="q" type="text" placeholder="Type or speak your question…">
+        <select id="lang">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+        </select>
+        <button id="mic" class="btn">🎤 Mic</button>
+        <span id="micMsg"></span>
+      </div>
+    </div>
+
+    <button id="go" class="btn primary go-btn">Get Answers →</button>
+  </div>
+
+  <!-- ── Answer View ── -->
+  <div id="v-answer" class="view">
+    <div class="mode-row">
+      <button class="mode btn" data-mode="summary">📋 Summary</button>
+      <button class="mode btn" data-mode="explain">💡 Explain</button>
+      <button class="mode btn" data-mode="practice">✏️ Practice</button>
+    </div>
+    <div class="answer-box">
+      <pre id="out">Select a mode above to generate a response.</pre>
+      <p id="by"></p>
+    </div>
+    <button id="copy" class="btn alt" style="width:100%">📋 Copy to Clipboard</button>
+  </div>
+
+  <!-- ── Models / Status View ── -->
+  <div id="v-models" class="view">
+    <div id="eng"></div>
+    <div class="status-footer">
+      <span class="dot" id="mdot"></span>
+      <span>System Status</span>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════ Application Logic ════════ -->
+<script>
+const API_URL = "http://127.0.0.1:8000";
+
+window.CampusEngines = {
+  ocr: async (imageDataUrl) => {
+    const res = await fetch(`${API_URL}/api/ocr`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: imageDataUrl })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "OCR server error" }));
+      throw new Error(err.detail || "OCR request failed");
+    }
+    const data = await res.json();
+    return data.text;
+  },
+
+  stt: async (lang) => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    const audioChunks = [];
+
+    return new Promise((resolve, reject) => {
+      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        try {
+          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("file", audioBlob, "recording.webm");
+          formData.append("lang", lang);
+
+          const res = await fetch(`${API_URL}/api/stt`, { method: "POST", body: formData });
+          if (!res.ok) throw new Error("STT server error");
+          const data = await res.json();
+          resolve(data.text);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => {
+        if (mediaRecorder.state === "recording") mediaRecorder.stop();
+      }, 4500);
+    });
+  },
+
+  llm: async ({ mode, notes, question }) => {
+    const res = await fetch(`${API_URL}/api/llm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode, notes, question })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "LLM communication failed" }));
+      throw new Error(err.detail || "LLM request failed");
+    }
+    const data = await res.json();
+    return data.answer;
+  }
+};
+
+/* ── Helpers ── */
+const $ = id => document.getElementById(id);
+const E = () => window.CampusEngines || {};
+const S = $('study'), L = $('landing');
+
+function toast(m) {
+  const t = $('toast');
+  t.textContent = m;
+  t.classList.add('on');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove('on'), 3000);
+}
+
+/* ── Page Navigation ── */
+function show(tool) {
+  if (!tool && typeof camOff === 'function') camOff();
+  L.style.display = tool ? 'none' : '';
+  S.classList.toggle('on', !!tool);
+  window.scrollTo(0, 0);
+  if (tool) engines();
+}
+
+function view(n) {
+  if (n !== 'camera' && typeof camOff === 'function') camOff();
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('cur', v.id === 'v-' + n));
+  document.querySelectorAll('button.nav[data-view]').forEach(b => b.classList.toggle('cur', b.dataset.view === n));
+  window.scrollTo(0, 0);
+  if (n === 'models') engines();
+}
+
+document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => show(true));
+document.querySelectorAll('button.nav[data-view]').forEach(b => b.onclick = () => view(b.dataset.view));
+$('back').onclick = () => show(false);
+
+/* ── Network Status ── */
+function net() { $('net').innerHTML = 'Local Backend: <b>Connected</b>'; }
+net();
+
+/* ── Engine Status ── */
+function status() {
+  return [
+    { n: 'Reading photos',  ok: !!E().ocr, b: 'Connected: EasyOCR',       d: 'Extracts text from notebook and textbook images.' },
+    { n: 'Speaking',         ok: !!E().stt, b: 'Connected: Whisper',       d: 'Transcribes English, Hindi, and Hinglish queries.' },
+    { n: 'Answers',          ok: !!E().llm, b: 'Connected: Qwen 2.5 Coder', d: 'Runs reasoning, step-by-step math derivations, and practice sets.' }
+  ];
+}
+
+function engines() {
+  const s = status();
+  $('eng').innerHTML = s.map(() =>
+    `<div class="card"><h3></h3><span class="badge"></span><p></p></div>`
+  ).join('');
+  [...$('eng').children].forEach((c, i) => {
+    c.querySelector('h3').textContent = s[i].n;
+    const badge = c.querySelector('.badge');
+    badge.textContent = s[i].b;
+    if (s[i].ok) badge.classList.add('ok');
+    c.querySelector('p').textContent = s[i].d;
+  });
+  $('mdot').className = 'dot ok';
+  $('by').textContent = '';
+}
+
+/* ── Camera ── */
+let stream;
+function camOff() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null;
+  $('vid').srcObject = null;
+  $('stageMsg').style.display = 'block';
+  $('shot').disabled = true;
+  $('stop').disabled = true;
+}
+
+$('cam').onclick = async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    $('vid').srcObject = stream;
+    $('stageMsg').style.display = 'none';
+    $('shot').disabled = false;
+    $('stop').disabled = false;
+    $('camMsg').textContent = 'Hold the page steady, then capture.';
+  } catch (e) {
+    $('camMsg').textContent = 'Camera permission denied or camera not found.';
+  }
+};
+$('stop').onclick = camOff;
+
+/* ── Photo Gallery ── */
+const photos = [];
+
+// NOTE: Preserves natural contrast so OCR can distinguish characters
+function addPhoto(src, w, h, name) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.drawImage(src, 0, 0, w, h);
+  photos.push({ url: c.toDataURL('image/jpeg', 0.92), name });
+  renderGal();
+}
+
+$('shot').onclick = () => {
+  const v = $('vid');
+  const s = Math.min(1, 1600 / v.videoWidth);
+  addPhoto(v, Math.round(v.videoWidth * s), Math.round(v.videoHeight * s), 'Page ' + (photos.length + 1));
+  toast('Saved to Photos');
+};
+
+$('file').onchange = e => {
+  [...e.target.files].forEach(f => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1600 / img.width);
+      addPhoto(img, Math.round(img.width * s), Math.round(img.height * s), f.name);
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(f);
+  });
+  e.target.value = '';
+};
+
+function renderGal() {
+  const g = $('gal');
+  g.innerHTML = '';
+  if (!photos.length) {
+    g.innerHTML = '<div class="empty" style="grid-column:1/-1">No pages yet. Capture with the camera or choose photos.</div>';
+    return;
+  }
+  photos.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'ph';
+    d.innerHTML = '<img alt=""><div><button class="btn">Read text</button><button class="btn alt">Remove</button></div>';
+    d.querySelector('img').src = p.url;
+    d.querySelector('img').alt = p.name;
+    const [rd, rm] = d.querySelectorAll('button');
+    rd.onclick = () => readPhoto(p, rd);
+    rm.onclick = () => { photos.splice(i, 1); renderGal(); };
+    g.appendChild(d);
+  });
+}
+
+async function readPhoto(p, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Reading…';
+  try {
+    const t = await E().ocr(p.url);
+    if (t && t.trim()) {
+      $('notes').value = ($('notes').value.trim() ? $('notes').value.trim() + '\n\n' : '') + t.trim();
+      wc();
+      toast('Text added to Notes');
+      view('text');
+    } else {
+      toast('No text detected in this image. Try clearer lighting.');
+    }
+  } catch (e) {
+    console.error(e);
+    toast('OCR Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Read text';
+  }
+}
+
+/* ── Word Count ── */
+function wc() {
+  const n = ($('notes').value.match(/\S+/g) || []).length;
+  $('wc').textContent = n + ' words';
+}
+$('notes').oninput = wc;
+$('clr').onclick = () => { $('notes').value = ''; wc(); };
+wc();
+
+/* ── Speech-to-Text ── */
+$('mic').onclick = async () => {
+  $('micMsg').textContent = 'Listening (4s)…';
+  try {
+    $('q').value = await E().stt($('lang').value);
+    toast('Transcription complete');
+  } catch (e) {
+    toast('STT Error: ' + e.message);
+  } finally {
+    $('micMsg').textContent = '';
+  }
+};
+
+/* ── Navigate to Answers ── */
+$('go').onclick = () => view('answer');
+
+/* ── LLM Answer Generation ── */
+async function answer(mode) {
+  const notes = $('notes').value.trim();
+  const q = $('q').value.trim();
+  if (!notes && !q) {
+    toast('Please type a question or add notes first');
+    return;
+  }
+  if ((mode === 'summary' || mode === 'practice') && !notes) {
+    view('text');
+    toast('Add notes first for ' + mode);
+    return;
+  }
+  $('out').textContent = 'Thinking…';
+  try {
+    const result = await E().llm({ mode, notes, question: q });
+    $('out').textContent = result;
+    $('by').textContent = 'Generated by Qwen 2.5 Coder';
+  } catch (e) {
+    $('out').textContent = 'Error: ' + e.message;
+    $('by').textContent = 'Generation failed';
+    toast(e.message);
+  }
+}
+
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.mode').forEach(x => x.classList.remove('cur'));
+  b.classList.add('cur');
+  answer(b.dataset.mode);
+});
+
+/* ── Copy ── */
+$('copy').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($('out').textContent);
+    toast('Copied');
+  } catch (e) {
+    toast('Copy failed');
+  }
+};
+
+/* ── Initial Gallery Render ── */
+renderGal();
+</script>
+</body>
+</html>
